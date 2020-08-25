@@ -23,20 +23,22 @@ class NewVisitorTest(unittest.TestCase):
                'Enter a to-do item'
                )
 
-       inputbox.send_keys('Buy peacock feathers')
+       inputbox.send_keys(' Buy peacock feathers')
 
        inputbox.send_keys(Keys.ENTER)
-       time.sleep(1)
+       time.sleep(2)
 
     # watch out for find_element and find_elements, with 's' means returning more than one.
     # find_element raises execption if no matches found, find_elements may return []
 
        table = self.browser.find_element_by_id('id_list_table')
        rows = table.find_elements_by_tag_name('tr')
-       self.assertTrue(
-               any(row.text == '1: Buy peacock frather' for row in rows),"New to-do item did not show in table"
-       )       
+       #self.assertTrue(
+               # in python 3.6+ we could use f"str"to insert local variables in curly syntax
+               #any(row.text == '1: Buy peacock frather' for row in rows),f"New to-do item did not show in table. Content were \n {table.text}"
+#       )
 
+       self.assertIn('1: Buy peacock feathers', [row.text for row in rows])
        self.fail('Finish the test!')
 
 if __name__ == '__main__':
