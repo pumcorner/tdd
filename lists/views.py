@@ -4,4 +4,7 @@ from django.http import HttpResponse
 # Create your views here.
 
 def home_page(request):
-    return HttpResponse('<html><title>To-Do lists</title></html>')
+
+    # templetes can be subsistuting python variables
+    # we use render render_to_string rather than open (which opens file in disk) 
+    return render(request, 'home.html')
