@@ -9,15 +9,15 @@ def home_page(request):
     ## we use render render_to_string rather than open (which opens file in disk)
 
     ## We have a multi dict key error here if using request.POST['item_text']
-    ## I guess that's because the default empty key is None and we actually get a '' in test one
-    ## Still confusing needs to look into doc
-    if request.method == 'POST':
-        # objects.create() equals item=Item() & item.save()
-        Item.objects.create(text = request.POST['item_text'])
-        return redirect('/lists/the-only-one-identifier/')
-
+    #(?) I guess that's because the default empty key is None and we actually get a '' in test one
+    #(?) Still confusing needs to look into doc
+    ## objects.create() equals item=Item() & item.save()
     return render(request, 'home.html')
 
 def view_list(request):
     items = Item.objects.all()
     return render(request, 'list.html',{'items': items})
+
+def new_list(request):
+    Item.objects.create(text = request.POST['item_text'])
+    return redirect('/lists/the-only-one-identifier/')
