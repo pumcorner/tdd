@@ -9,4 +9,4 @@ class List(models.Model):
 # models.Model automatically assign id for item in column 1
 class Item(models.Model):
     text = models.TextField(default='')
-    list = models.ForeignKey('lists.List', on_delete=models.CASCADE,related_name = 'lists', default = None)
+    list = models.ForeignKey('lists.List', on_delete=models.CASCADE,default = None)

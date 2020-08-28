@@ -43,20 +43,35 @@ class ItemAndListModelTest(TestCase):
 ## regression test, to test view function when new url is involved
 class ListViewTest(TestCase):
 
-    def test_displays_all_lists_item(self):
-        list_ = List.objects.create()
-        Item.objects.create(text = 'item 1', list = list_)
-        Item.objects.create(text = 'item 2', list = list_)
+    def test_only_displays_user_lists_item(self):
+        user_list = List.objects.create()
+        Item.objects.create(text = 'item 1', list = user_list)
+        Item.objects.create(text = 'item 2', list = user_list)
 
-        response = self.client.get('/lists/the-only-one-identifier/')
+        other_list = List.objects.create()
+        Item.objects.create(text = 'item 3', list = other_list)
+
+        response = self.client.get(f'/lists/{user_list.id}/')
 
         ## assertContains could recognize the bytes in response
+        self.assertEqual(response.context['list'], user_list)
         self.assertContains(response, 'item 1')
         self.assertContains(response, 'item 2')
+        self.assertNotContains(response, 'item 3')
 
     def test_use_list_view_template(self):
-        response = self.client.get('/lists/the-only-one-identifier/')
+        list = List.objects.create()
+        response = self.client.get(f'/lists/{list.id}/')
         self.assertTemplateUsed(response, 'list.html')
+
+    def test_passes_correct_items_to_template(self):
+
+        other_list = List.objects.create()
+        list_ = List.objects.create()
+        response = self.client.get(f'/lists/{list_.id}/')
+        ## if use content decode() is required
+        self.assertEqual(response.context['list'], list_)
+
 
 class NewListTest(TestCase):
 
@@ -75,5 +90,28 @@ class NewListTest(TestCase):
         ## response.status.code == 200 means the webpage has been rendered
     def test_redirects_atfer_POST(self):
         response = self.client.post('/lists/new',data={'item_text':'A new list item'})
+        new_list = List.objects.first()
         ## The following one could replace twolines
-        self.assertRedirects(response, '/lists/the-only-one-identifier/')
+        self.assertRedirects(response, f'/lists/{new_list.id}/')
+
+class NewItemTest(TestCase):
+
+    def test_can_save_a_new_item_to_an_exsiting_list(self):
+
+        list_ = List.objects.create()
+        otherlist = List.objects.create()
+
+        self.client.post(f'/lists/{list_.id}/add_item', data={'item_text': 'item 01'})
+        self.assertEqual(Item.objects.count(),1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'item 01')
+        self.assertEqual(new_item.list, list_)
+
+    def test_redirects_to_list_view(self):
+
+        other_list = List.objects.create()
+        list_ = List.objects.create()
+
+        response = self.client.post(f'/lists/{list_.id}/add_item',data={'item_text':'new item adding to list_'})
+
+        self.assertRedirects(response, f'/lists/{list_.id}/')
